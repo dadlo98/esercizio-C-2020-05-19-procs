@@ -69,15 +69,14 @@ int main(int argc, char * argv[]) {
             default:
                 if(*countdown == 0)
                     *shutdown = 1;
-		    sleep(1);
-              
         }
     }
-  
+    sleep(1);
+	
+    *countdown = 100000;
+	
     while(wait(NULL) != -1) {
-        sem_wait(process_semaphore);
-        *countdown = 100000;
-        sem_post(process_semaphore);        
+        continue;        
     }
 
     printf("\nprocess_counter[ ]\n");
