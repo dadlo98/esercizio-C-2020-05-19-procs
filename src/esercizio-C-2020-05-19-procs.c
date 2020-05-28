@@ -18,15 +18,28 @@ int * process_counter;
 sem_t * process_semaphore;
 
 void child_function(int i){
-    if(countdown > 0) {
-        sem_wait(process_semaphore);
-        countdown--;
-        sem_post(process_semaphore);
+    while(1){
+      if (sem_wait(process_semaphore) == -1) {
+        perror("sem_wait");
+        exit(EXIT_FAILURE);
+      }
+
+      if( *countdown > 0 ){
+        *countdown = (*countdown -1);
         process_counter[i]++;
-    }
-	
-    if(shutdown != 0)
+      }
+
+      if (sem_post(process_semaphore) == -1) {
+        perror("sem_post");
+        exit(EXIT_FAILURE);
+      }
+
+      if( *shutdown != 0){
         exit(0);
+      }
+
+	  }
+    exit(0);
 }
 
 int main(int argc, char * argv[]) {
@@ -67,21 +80,37 @@ int main(int argc, char * argv[]) {
                 perror("fork()");
                 exit(EXIT_FAILURE);
             default:
-                if(*countdown == 0)
-                    *shutdown = 1;
+                ; 
         }
     }
+
     sleep(1);
-	
-    *countdown = 100000;
-	
-    while(wait(NULL) != -1) {
-        continue;        
+    if (sem_wait(process_semaphore) == -1) {
+        perror("sem_wait");
+        exit(EXIT_FAILURE);
+      }
+    *countdown = 100;
+    if (sem_post(process_semaphore) == -1) {
+      perror("sem_post");
+      exit(EXIT_FAILURE);
     }
 
-    printf("\nprocess_counter[ ]\n");
+    while(1){
+      if(*countdown == 0){
+          (*shutdown) = 1;
+          break;
+      }
+    }
+
+    for(int i=0; i < N; i++){
+        if(wait(NULL) == -1){
+            perror("wait");
+            exit(EXIT_FAILURE);
+        }
+    }
+
     for(int i=0; i<N; i++) {
-        printf("%d\n", process_counter[i]);
+       printf("\nprocess_counter[%d] = %d\n", i, process_counter[i]);
     }
 
     return 0;
