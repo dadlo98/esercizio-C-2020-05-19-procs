@@ -9,6 +9,7 @@
 #include <sys/mman.h>
 #include <errno.h>
 #include <semaphore.h>
+#include <pthread.h>
 
 #define N 10
 
@@ -25,7 +26,7 @@ void child_function(int i){
       }
 
       if( *countdown > 0 ){
-        *countdown = (*countdown -1);
+        (*countdown)--;
         process_counter[i]++;
       }
 
